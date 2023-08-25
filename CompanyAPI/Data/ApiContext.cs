@@ -16,7 +16,6 @@ namespace CompanyAPI.Data
         public ApiContext(DbContextOptions<ApiContext> options)
             :base(options)
         {
-
         }
     }
 }
