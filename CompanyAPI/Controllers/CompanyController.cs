@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using CompanyAPI.Services;
 using CompanyAPI.Models;
-using CompanyAPI.Data;
 
 namespace CompanyAPI.Controllers
 {
@@ -9,51 +8,59 @@ namespace CompanyAPI.Controllers
     [ApiController]
     public class CompanyController : ControllerBase
     {
-        private readonly ApiContext _context;
+        private readonly CompanyService _companyService;
 
-        public CompanyController(ApiContext context)
+        public CompanyController(CompanyService companyService)
         {
-            _context = context;
+            _companyService = companyService;
         }
 
         [HttpPost]
-        public JsonResult CreateEdit(Company company)
+        public IActionResult CreateEdit(Company company)
         {
-            if (company.Id == 0)
+            try
             {
-                _context.Companies.Add(company);
-            }
-            else
-            {
-                var companyInDb = _context.Companies.Find(company.Id);
-
-                if (companyInDb == null)
+                if (company.Id == 0)
                 {
-                    return new JsonResult(NotFound());
+                    var newCompany = _companyService.CreateCompany(company);
+                    return CreatedAtRoute("GetCompany", new { id = newCompany.Id }, newCompany);
                 }
-
-                companyInDb = company;
+                else
+                {
+                    var updatedCompany = _companyService.UpdateCompany(company);
+                    if (updatedCompany == null)
+                    {
+                        return NotFound("Company not found.");
+                    }
+                    return Ok(updatedCompany);
+                }
             }
-
-            _context.SaveChanges();
-
-            return new JsonResult(Ok(company));
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
-        [HttpDelete] 
-        public JsonResult Delete(int id)
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
         {
-            var result = _context.Companies.Find(id);
-
-            if (result == null)
+            try
             {
-                return new JsonResult(NotFound());
+                _companyService.DeleteCompany(id);
+                return NoContent();
             }
-
-            _context.Companies.Remove(result);
-            _context.SaveChanges();
-
-            return new JsonResult(NoContent());
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
     }
 }

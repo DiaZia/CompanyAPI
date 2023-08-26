@@ -1,36 +1,73 @@
 ﻿using CompanyAPI.Data;
 using CompanyAPI.Models;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
 
 namespace CompanyAPI.Services
 {
     public class CompanyService
     {
-        private readonly ApiContext _dbContext;
+        private readonly ApiContext dbContext;
+
         public CompanyService(ApiContext dbContext)
         {
-            _dbContext = dbContext;
+            this.dbContext = dbContext;
         }
 
-        public async Task<List<Company>> GetAllCompanies()
+        public Company CreateCompany(Company newCompany)
         {
-            return await _dbContext.Companies.ToListAsync();
+            if (dbContext.Employees.Any(e => e.Id == newCompany.DirectorId))
+            {
+                dbContext.Companies.Add(newCompany);
+                dbContext.SaveChanges();
+                return newCompany;
+            }
+            else
+            {
+                throw new Exception("The employee with the given id does not exist.");
+            }
         }
 
-        public async Task<Company> GetCompanyById(int companyId)
+        public Company UpdateCompany(Company company)
         {
-            return await _dbContext.Companies.FindAsync(companyId);
+            var companyInDb = dbContext.Companies.Find(company.Id);
+
+            if (companyInDb == null)
+            {
+                throw new ArgumentException("Company not found.", nameof(company.Id));
+            }
+
+            companyInDb.Code = company.Code;
+            companyInDb.Name = company.Name;
+            companyInDb.DirectorId = company.DirectorId;
+
+            dbContext.SaveChanges();
+            return companyInDb;
         }
 
-        public async Task CreateCompany(Company company)
+        public void DeleteCompany(int id)
         {
-            _dbContext.Companies.Add(company);
-            await _dbContext.SaveChangesAsync();
+            var company = dbContext.Companies.Find(id);
+
+            if (company == null)
+            {
+                throw new ArgumentException("Company not found.", nameof(id));
+            }
+
+            dbContext.Companies.Remove(company);
+            dbContext.SaveChanges();
+        }
+
+        public Company GetCompanyById(int id)
+        {
+            var company = dbContext.Companies.FirstOrDefault(c => c.Id == id);
+
+            if (company == null)
+            {
+                throw new ArgumentException("Company not found.", nameof(id));
+            }
+
+            return company;
         }
     }
 }
