@@ -1,7 +1,5 @@
 ﻿using CompanyAPI.Data;
 using CompanyAPI.Models;
-using System;
-using System.Linq;
 
 namespace CompanyAPI.Services
 {
@@ -24,7 +22,7 @@ namespace CompanyAPI.Services
             }
             else
             {
-                throw new Exception("The employee with the given id does not exist.");
+                throw new ArgumentException("The employee with the given id does not exist.");
             }
         }
 
@@ -35,6 +33,11 @@ namespace CompanyAPI.Services
             if (companyInDb == null)
             {
                 throw new ArgumentException("Company not found.", nameof(company.Id));
+            }
+
+            if (!dbContext.Employees.Any(e => e.Id == company.DirectorId))
+            {
+                throw new ArgumentException("The employee with the given id does not exist.");
             }
 
             companyInDb.Code = company.Code;
@@ -60,7 +63,7 @@ namespace CompanyAPI.Services
 
         public Company GetCompanyById(int id)
         {
-            var company = dbContext.Companies.FirstOrDefault(c => c.Id == id);
+            var company = dbContext.Companies.Find(id);
 
             if (company == null)
             {

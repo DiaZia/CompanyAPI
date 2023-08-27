@@ -1,6 +1,5 @@
-﻿using CompanyAPI.Data;
-using CompanyAPI.Models;
-using Microsoft.AspNetCore.Http;
+﻿using CompanyAPI.Models;
+using CompanyAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyAPI.Controllers
@@ -9,51 +8,68 @@ namespace CompanyAPI.Controllers
     [ApiController]
     public class DivisionController : ControllerBase
     {
-        private readonly ApiContext _context;
+        private readonly DivisionService _divisionService;
 
-        public DivisionController(ApiContext context)
+        public DivisionController(DivisionService divisionService)
         {
-            _context = context;
+            _divisionService = divisionService;
         }
 
         [HttpPost]
-        public JsonResult CreateEdit(Division division)
+        public IActionResult CreateEdit(Division division)
         {
-            if (division.Id == 0)
+            try
             {
-                _context.Divisions.Add(division);
+                var newDivision = _divisionService.CreateDivision(division);
+                return CreatedAtRoute("GetDivision", new { id = newDivision.Id }, newDivision);
+                
             }
-            else
+            catch (ArgumentException ex)
             {
-                var divisionInDb = _context.Divisions.Find(division.Id);
-
-                if (divisionInDb == null)
-                {
-                    return new JsonResult(NotFound());
-                }
-
-                divisionInDb = division;
+                return BadRequest(ex.Message);
             }
-
-            _context.SaveChanges();
-
-            return new JsonResult(Ok(division));
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
-        [HttpDelete]
-        public JsonResult Delete(int id)
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Division division)
         {
-            var result = _context.Divisions.Find(id);
-
-            if (result == null)
+            try
             {
-                return new JsonResult(NotFound());
+                division.Id = id;
+                var updatedDivision = _divisionService.UpdateDivision(division);
+                return Ok(updatedDivision);
             }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
 
-            _context.Divisions.Remove(result);
-            _context.SaveChanges();
 
-            return new JsonResult(NoContent());
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                _divisionService.DeleteDivision(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
     }
 }

@@ -16,24 +16,12 @@ namespace CompanyAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateEdit(Company company)
+        public IActionResult Create(Company company)
         {
             try
             {
-                if (company.Id == 0)
-                {
-                    var newCompany = _companyService.CreateCompany(company);
-                    return CreatedAtRoute("GetCompany", new { id = newCompany.Id }, newCompany);
-                }
-                else
-                {
-                    var updatedCompany = _companyService.UpdateCompany(company);
-                    if (updatedCompany == null)
-                    {
-                        return NotFound("Company not found.");
-                    }
-                    return Ok(updatedCompany);
-                }
+                var newCompany = _companyService.CreateCompany(company);
+                return CreatedAtRoute("GetCompany", new { id = newCompany.Id }, newCompany);
             }
             catch (ArgumentException ex)
             {
@@ -44,6 +32,26 @@ namespace CompanyAPI.Controllers
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Company company) 
+        {
+            try
+            {
+                company.Id = id;
+                var updatedCompany = _companyService.UpdateCompany(company);
+                return Ok(updatedCompany);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
+
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)

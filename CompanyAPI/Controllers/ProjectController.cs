@@ -1,5 +1,6 @@
 ﻿using CompanyAPI.Data;
 using CompanyAPI.Models;
+using CompanyAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,51 +11,67 @@ namespace CompanyAPI.Controllers
     public class ProjectController : ControllerBase
     {
 
-        private readonly ApiContext _context;
+        private readonly ProjectService _projectService;
 
-        public ProjectController(ApiContext context)
+        public ProjectController(ProjectService projectService)
         {
-            _context = context;
+            _projectService = projectService;
         }
 
         [HttpPost]
-        public JsonResult CreateEdit(Project project)
+        public IActionResult CreateEdit(Project project)
         {
-            if (project.Id == 0)
+            try
             {
-                _context.Projects.Add(project);
+                var newProject = _projectService.CreateProject(project);
+                return CreatedAtRoute("GetProject", new { id = newProject.Id }, newProject);
             }
-            else
+            catch (ArgumentException ex)
             {
-                var projectInDb = _context.Projects.Find(project.Id);
-
-                if (projectInDb == null)
-                {
-                    return new JsonResult(NotFound());
-                }
-
-                projectInDb = project;
+                return BadRequest(ex.Message);
             }
-
-            _context.SaveChanges();
-
-            return new JsonResult(Ok(project));
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
-        [HttpDelete]
-        public JsonResult Delete(int id)
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Project project)
         {
-            var result = _context.Projects.Find(id);
-
-            if (result == null)
+            try
             {
-                return new JsonResult(NotFound());
+                project.Id = id;
+                var updatedProject = _projectService.UpdateProject(project);
+                return Ok(updatedProject);
             }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
 
-            _context.Projects.Remove(result);
-            _context.SaveChanges();
 
-            return new JsonResult(NoContent());
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                _projectService.DeleteProject(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CompanyAPI.Data;
 using CompanyAPI.Models;
+using CompanyAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,51 +11,67 @@ namespace CompanyAPI.Controllers
     public class DepartmentController : ControllerBase
     {
 
-        private readonly ApiContext _context;
+        private readonly DepartmentService _departmentService;
 
-        public DepartmentController(ApiContext context)
+        public DepartmentController(DepartmentService departmentService)
         {
-            _context = context;
+            _departmentService = departmentService;
         }
 
         [HttpPost]
-        public JsonResult CreateEdit(Department department)
+        public IActionResult Create(Department department)
         {
-            if (department.Id == 0)
+            try
             {
-                _context.Departments.Add(department);
+                var newDepartment = _departmentService.CreateDepartment(department);
+                return CreatedAtRoute("GetDepartment", new { id = newDepartment.Id }, newDepartment);
             }
-            else
+            catch (ArgumentException ex)
             {
-                var departmentInDb = _context.Departments.Find(department.Id);
-
-                if (departmentInDb == null)
-                {
-                    return new JsonResult(NotFound());
-                }
-
-                departmentInDb = department;
+                return BadRequest(ex.Message);
             }
-
-            _context.SaveChanges();
-
-            return new JsonResult(Ok(department));
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
-        [HttpDelete]
-        public JsonResult Delete(int id)
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Department department)
         {
-            var result = _context.Departments.Find(id);
-
-            if (result == null)
+            try
             {
-                return new JsonResult(NotFound());
+                department.Id = id;
+                var updatedDepartment = _departmentService.UpdateDepartment(department);
+                return Ok(updatedDepartment);
             }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
 
-            _context.Departments.Remove(result);
-            _context.SaveChanges();
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                _departmentService.DeleteDepartment(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
 
-            return new JsonResult(NoContent());
+            }
         }
     }
 }

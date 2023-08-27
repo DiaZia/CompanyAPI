@@ -5,6 +5,8 @@ namespace CompanyAPI.Models
 {
     public class Company
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "The Code field is required.")]
@@ -15,9 +17,9 @@ namespace CompanyAPI.Models
         public string Name { get; set; }
 
         [Required(ErrorMessage = "The DirectorId field is required.")]
-        public int DirectorId { get; set; }
+        public int? DirectorId { get; set; }
 
         [ForeignKey("DirectorId")]
-        public Employee Director { get; set; }
+        public Employee? Director { get; set; }
     }
 }

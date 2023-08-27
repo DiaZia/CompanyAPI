@@ -1,6 +1,5 @@
-﻿using CompanyAPI.Data;
+﻿using CompanyAPI.Services;
 using CompanyAPI.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyAPI.Controllers
@@ -9,51 +8,76 @@ namespace CompanyAPI.Controllers
     [ApiController]
     public class EmployeeController : ControllerBase
     {
-        private readonly ApiContext _context;
+         private readonly EmployeeService _employeeService;
 
-        public EmployeeController(ApiContext context)
+        public EmployeeController(EmployeeService employeeService)
         {
-            _context = context;
+            _employeeService = employeeService;
         }
 
         [HttpPost]
-        public JsonResult CreateEdit(Employee employee)
+        public IActionResult Create(Employee employee)
         {
-            if (employee.Id == 0)
+            try
             {
-                _context.Employees.Add(employee);
+                var newEmployee = _employeeService.CreateEmployee(employee);
+                return CreatedAtRoute("GetEmployee", new { id = newEmployee.Id }, newEmployee);
             }
-            else
+            catch (Exception ex)
             {
-                var employeeInDb = _context.Employees.Find(employee.Id);
-
-                if (employeeInDb == null)
-                {
-                    return new JsonResult(NotFound());
-                }
-
-                employeeInDb = employee;
+                return BadRequest(ex.Message);
             }
-
-            _context.SaveChanges();
-
-            return new JsonResult(Ok(employee));
         }
 
-        [HttpDelete]
-        public JsonResult Delete(int id)
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Employee employee)
         {
-            var result = _context.Employees.Find(id);
-
-            if (result == null)
+            try
             {
-                return new JsonResult(NotFound());
+                employee.Id = id;
+                var updatedEmployee = _employeeService.UpdateEmployee(employee);
+                return Ok(updatedEmployee);
             }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
 
-            _context.Employees.Remove(result);
-            _context.SaveChanges();
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                _employeeService.DeleteEmployee(id);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
 
-            return new JsonResult(NoContent());
+        [HttpGet("{id}", Name = "GetEmployee")]
+        public IActionResult GetById(int id)
+        {
+            try
+            {
+                var employee = _employeeService.GetEmployeeById(id);
+                return Ok(employee);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
