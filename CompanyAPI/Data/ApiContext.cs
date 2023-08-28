@@ -7,11 +7,11 @@ namespace CompanyAPI.Data
     public class ApiContext : DbContext
     {
 
-        public DbSet<Company> Companies { get; set; }
-        public DbSet<Division> Divisions { get; set; }
-        public DbSet<Project> Projects { get; set; }
-        public DbSet<Department> Departments { get; set; }
-        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Company> Company { get; set; }
+        public DbSet<Division> Division { get; set; }
+        public DbSet<Project> Project { get; set; }
+        public DbSet<Department> Department { get; set; }
+        public DbSet<Employee> Employee { get; set; }
 
         public ApiContext(DbContextOptions<ApiContext> options)
             :base(options)

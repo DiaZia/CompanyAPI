@@ -14,30 +14,48 @@ namespace CompanyAPI.Services
 
         public Company CreateCompany(Company newCompany)
         {
-            if (dbContext.Employees.Any(e => e.Id == newCompany.DirectorId))
+            if (dbContext.Company.Any(c => c.Code == newCompany.Code))
             {
-                dbContext.Companies.Add(newCompany);
-                dbContext.SaveChanges();
-                return newCompany;
+                throw new ArgumentException("A company with the given code already exists.");
+            }
+            if (newCompany.DirectorId != 0)
+            {
+                if (dbContext.Employee.Any(e => e.Id == newCompany.DirectorId))
+                {
+                    dbContext.Company.Add(newCompany);
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    throw new ArgumentException("The employee with the given id does not exist.");
+                }
             }
             else
             {
-                throw new ArgumentException("The employee with the given id does not exist.");
+                newCompany.DirectorId = null;
+                dbContext.Company.Add(newCompany);
+                dbContext.SaveChanges();
             }
+            return newCompany;
         }
 
         public Company UpdateCompany(Company company)
         {
-            var companyInDb = dbContext.Companies.Find(company.Id);
+            var companyInDb = dbContext.Company.Find(company.Id);
 
             if (companyInDb == null)
             {
                 throw new ArgumentException("Company not found.", nameof(company.Id));
             }
-
-            if (!dbContext.Employees.Any(e => e.Id == company.DirectorId))
+            if (company.DirectorId != 0)
             {
-                throw new ArgumentException("The employee with the given id does not exist.");
+                if (!dbContext.Employee.Any(e => e.Id == company.DirectorId))
+                {
+                    throw new ArgumentException("The employee with the given id does not exist.");
+                }
+            } else
+            {
+                company.DirectorId = null;
             }
 
             companyInDb.Code = company.Code;
@@ -50,24 +68,24 @@ namespace CompanyAPI.Services
 
         public void DeleteCompany(int id)
         {
-            var company = dbContext.Companies.Find(id);
+            var company = dbContext.Company.Find(id);
 
             if (company == null)
             {
-                throw new ArgumentException("Company not found.", nameof(id));
+                throw new ArgumentException("Company not found.");
             }
 
-            dbContext.Companies.Remove(company);
+            dbContext.Company.Remove(company);
             dbContext.SaveChanges();
         }
 
         public Company GetCompanyById(int id)
         {
-            var company = dbContext.Companies.Find(id);
+            var company = dbContext.Company.Find(id);
 
             if (company == null)
             {
-                throw new ArgumentException("Company not found.", nameof(id));
+                throw new ArgumentException("Company not found.");
             }
 
             return company;

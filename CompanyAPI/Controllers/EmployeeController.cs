@@ -16,22 +16,43 @@ namespace CompanyAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Employee employee)
+        public IActionResult Create(string? title, string firstName, string lastName, string? phone, string? email)
         {
+            Employee employee = new Employee(title, firstName, lastName, phone, email);
             try
             {
                 var newEmployee = _employeeService.CreateEmployee(employee);
-                return CreatedAtRoute("GetEmployee", new { id = newEmployee.Id }, newEmployee);
+                return Ok(newEmployee);
             }
+
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            } 
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetEmployeeById(int id)
+        {
+            try
+            {
+                var employee = _employeeService.GetEmployeeById(id);
+                return Ok(employee);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
             }
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, Employee employee)
+        public IActionResult Update(int id, string? title, string firstName, string lastName, string? phone, string? email)
         {
+            Employee employee = new Employee(title, firstName, lastName, phone, email);
             try
             {
                 employee.Id = id;
@@ -66,18 +87,6 @@ namespace CompanyAPI.Controllers
             }
         }
 
-        [HttpGet("{id}", Name = "GetEmployee")]
-        public IActionResult GetById(int id)
-        {
-            try
-            {
-                var employee = _employeeService.GetEmployeeById(id);
-                return Ok(employee);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
+        
     }
 }

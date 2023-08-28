@@ -14,25 +14,29 @@ namespace CompanyAPI.Services
 
         public Project CreateProject(Project newProject)
         {
-            EnsureEmployeeExists(newProject.LeaderId);
-            EnsureDivisionExists(newProject.DivisionId);
+            if (dbContext.Project.Any(c => c.Code == newProject.Code))
+            {
+                throw new ArgumentException("A project with the given code already exists.");
+            }
+            newProject.LeaderId = EnsureEmployeeExists(newProject.LeaderId);
+            newProject.DivisionId = EnsureDivisionExists(newProject.DivisionId);
 
-            dbContext.Projects.Add(newProject);
+            dbContext.Project.Add(newProject);
             dbContext.SaveChanges();
             return newProject;
         }
 
         public Project UpdateProject(Project project)
         {
-            var projectInDb = dbContext.Projects.Find(project.Id);
+            var projectInDb = dbContext.Project.Find(project.Id);
 
             if (projectInDb == null)
             {
                 throw new ArgumentException("Project not found.", nameof(project.Id));
             }
 
-            EnsureEmployeeExists(project.LeaderId);
-            EnsureDivisionExists(project.DivisionId);
+            project.LeaderId = EnsureEmployeeExists(project.LeaderId);
+            project.DivisionId = EnsureDivisionExists(project.DivisionId);
 
             projectInDb.Code = project.Code;
             projectInDb.Name = project.Name;
@@ -45,44 +49,53 @@ namespace CompanyAPI.Services
 
         public void DeleteProject(int id)
         {
-            var project = dbContext.Projects.Find(id);
+            var project = dbContext.Project.Find(id);
 
             if (project == null)
             {
-                throw new ArgumentException("Project not found.", nameof(id));
+                throw new ArgumentException("Project not found.");
             }
 
-            dbContext.Projects.Remove(project);
+            dbContext.Project.Remove(project);
             dbContext.SaveChanges();
         }
 
         public Project GetProjectById(int id)
         {
-            var project = dbContext.Projects.Find(id);
+            var project = dbContext.Project.Find(id);
 
             if (project == null)
             {
-                throw new ArgumentException("Project not found.", nameof(id));
+                throw new ArgumentException("Project not found.");
             }
 
             return project;
         }
 
 
-        private void EnsureEmployeeExists(int? employeeId)
+        private int? EnsureEmployeeExists(int? employeeId)
         {
-            if (!dbContext.Employees.Any(e => e.Id == employeeId))
+            if (employeeId != 0)
             {
-                throw new ArgumentException("The employee with the given id does not exist.");
+                if (!dbContext.Employee.Any(e => e.Id == employeeId))
+                {
+                    throw new ArgumentException("The employee with the given id does not exist.");
+                }
             }
+            else
+            {
+                employeeId = null;
+            }
+            return employeeId;
         }
 
-        private void EnsureDivisionExists(int divisionId)
+        private int EnsureDivisionExists(int divisionId)
         {
-            if (!dbContext.Divisions.Any(d => d.Id == divisionId))
+            if (!dbContext.Division.Any(d => d.Id == divisionId))
             {
                 throw new ArgumentException("The division with the given id does not exist.");
             }
+            return divisionId;
         }
     }
 }

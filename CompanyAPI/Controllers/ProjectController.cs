@@ -19,12 +19,13 @@ namespace CompanyAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateEdit(Project project)
+        public IActionResult CreateEdit(string code, string name, int? leaderId, int divisionId)
         {
+            Project project = new Project(code, name, leaderId, divisionId); 
             try
             {
                 var newProject = _projectService.CreateProject(project);
-                return CreatedAtRoute("GetProject", new { id = newProject.Id }, newProject);
+                return Ok(newProject);
             }
             catch (ArgumentException ex)
             {
@@ -36,9 +37,28 @@ namespace CompanyAPI.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, Project project)
+        [HttpGet("{id}")]
+        public IActionResult GetDivisionById(int id)
         {
+            try
+            {
+                var project = _projectService.GetProjectById(id);
+                return Ok(project);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, string code, string name, int? leaderId, int divisionId)
+        {
+            Project project = new Project(code, name, leaderId, divisionId);
             try
             {
                 project.Id = id;

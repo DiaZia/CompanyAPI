@@ -19,12 +19,13 @@ namespace CompanyAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Department department)
+        public IActionResult Create(string code, string name, int? leaderId, int projectId)
         {
+            Department department = new Department(code, name, leaderId, projectId);
             try
             {
                 var newDepartment = _departmentService.CreateDepartment(department);
-                return CreatedAtRoute("GetDepartment", new { id = newDepartment.Id }, newDepartment);
+                return Ok(newDepartment);
             }
             catch (ArgumentException ex)
             {
@@ -36,9 +37,28 @@ namespace CompanyAPI.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, Department department)
+        [HttpGet("{id}")]
+        public IActionResult GetDepartmentById(int id)
         {
+            try
+            {
+                var department = _departmentService.GetDepartmentById(id);
+                return Ok(department);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, string code, string name, int? leaderId, int projectId)
+        {
+            Department department = new Department(code, name, leaderId, projectId);
             try
             {
                 department.Id = id;

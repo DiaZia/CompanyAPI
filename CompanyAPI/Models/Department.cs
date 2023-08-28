@@ -17,17 +17,19 @@ namespace CompanyAPI.Models
         [Required(ErrorMessage = "The Name field is required.")]
         public string Name { get; set; }
 
-
-        [Required(ErrorMessage = "The LeaderId field is required.")]
         public int? LeaderId { get; set; }
-
-        [ForeignKey("LeaderId")]
-        public Employee? Leader { get; set; }
 
         [Required(ErrorMessage = "The ProjectId field is required.")]
         public int ProjectId { get; set; }
 
-        [ForeignKey("ProjectId")]
-        public Division Project { get; set; }
+        public Department() { }
+
+        public Department (string code, string name, int? leaderId, int projectId)
+        {
+            Code = code;
+            Name = name;
+            LeaderId = leaderId;
+            ProjectId = projectId;
+        }
     }
 }

@@ -24,5 +24,15 @@ namespace CompanyAPI.Models
 
         [EmailAddress]
         public string? Email { get; set; } 
+
+        public Employee() { }
+        public Employee(string? title, string firstName, string lastName, string? phone, string? email)
+        {
+            Title = title;
+            FirstName = firstName;
+            LastName = lastName;
+            Phone = phone;
+            Email = email;
+        }
     }
 }

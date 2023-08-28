@@ -16,10 +16,14 @@ namespace CompanyAPI.Models
         [Required(ErrorMessage = "The Name field is required.")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "The DirectorId field is required.")]
         public int? DirectorId { get; set; }
 
-        [ForeignKey("DirectorId")]
-        public Employee? Director { get; set; }
+        public Company() { }
+        public Company(string code, string name, int? directorId)
+        {
+            Code = code;
+            Name = name;
+            DirectorId = directorId;
+        }
     }
 }

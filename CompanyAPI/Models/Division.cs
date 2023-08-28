@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
 
 namespace CompanyAPI.Models
 {
@@ -16,17 +17,18 @@ namespace CompanyAPI.Models
         [Required(ErrorMessage = "The Name field is required.")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "The LeaderId field is required.")]
         public int? LeaderId { get; set; }
-
-        [ForeignKey("LeaderId")]
-        public Employee? Leader { get; set; }
 
         [Required(ErrorMessage = "The CompanyId field is required.")]
         public int CompanyId { get; set; }
 
-        [ForeignKey("CompanyId")]
-        public Company Company { get; set; }
-
+        public Division() { }
+        public Division(string code, string name, int? leaderId, int company)
+        {
+            Code = code;
+            Name = name;
+            LeaderId = leaderId;
+            CompanyId = company;
+        }
     }
 }
