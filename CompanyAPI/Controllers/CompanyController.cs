@@ -58,13 +58,11 @@ namespace CompanyAPI.Controllers
 
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, string code, string name, int? directorId) 
+        public IActionResult Update(int id, string? code, string? name, int? directorId) 
         {
-            Company company = new Company(code, name, directorId);
             try
             {
-                company.Id = id;
-                var updatedCompany = _companyService.UpdateCompany(company);
+                var updatedCompany = _companyService.UpdateCompany(id, code, name, directorId);
                 return Ok(updatedCompany);
             }
             catch (ArgumentException ex)

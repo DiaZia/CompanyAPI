@@ -53,13 +53,11 @@ namespace CompanyAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, string code, string name, int? leaderId, int companyId)
+        public IActionResult Update(int id, string? code, string? name, int? leaderId, int? companyId)
         {
-            Division division = new Division(code, name, leaderId, companyId);
             try
             {
-                division.Id = id;
-                var updatedDivision = _divisionService.UpdateDivision(division);
+                var updatedDivision = _divisionService.UpdateDivision(id, code, name, leaderId, companyId);
                 return Ok(updatedDivision);
             }
             catch (ArgumentException ex)

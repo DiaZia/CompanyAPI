@@ -1,5 +1,6 @@
 ﻿using CompanyAPI.Data;
 using CompanyAPI.Models;
+using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using System.Security.Principal;
 
 namespace CompanyAPI.Services
@@ -19,29 +20,41 @@ namespace CompanyAPI.Services
                 throw new ArgumentException("A project with the given code already exists.");
             }
             newProject.LeaderId = EnsureEmployeeExists(newProject.LeaderId);
-            newProject.DivisionId = EnsureDivisionExists(newProject.DivisionId);
+            newProject.DivisionId = (int)EnsureDivisionExists(newProject.DivisionId);
 
             dbContext.Project.Add(newProject);
             dbContext.SaveChanges();
             return newProject;
         }
 
-        public Project UpdateProject(Project project)
+        public Project UpdateProject(int id, string? code, string? name, int? leaderId, int? divisionId)
         {
-            var projectInDb = dbContext.Project.Find(project.Id);
+            var projectInDb = dbContext.Project.Find(id);
 
             if (projectInDb == null)
             {
-                throw new ArgumentException("Project not found.", nameof(project.Id));
+                throw new ArgumentException("Project not found.");
             }
 
-            project.LeaderId = EnsureEmployeeExists(project.LeaderId);
-            project.DivisionId = EnsureDivisionExists(project.DivisionId);
+            leaderId = EnsureEmployeeExists(leaderId);
+            divisionId = EnsureDivisionExists(divisionId);
 
-            projectInDb.Code = project.Code;
-            projectInDb.Name = project.Name;
-            projectInDb.LeaderId = project.LeaderId;
-            projectInDb.DivisionId = project.DivisionId;
+            if (code != null)
+            {
+                projectInDb.Code = code;
+            }
+            if (name != null)
+            {
+                projectInDb.Name = name;
+            }
+            if (leaderId != null)
+            {
+                projectInDb.LeaderId = leaderId;
+            }
+            if (divisionId != null)
+            {
+                projectInDb.DivisionId = (int)divisionId;
+            }
 
             dbContext.SaveChanges();
             return projectInDb;
@@ -75,25 +88,31 @@ namespace CompanyAPI.Services
 
         private int? EnsureEmployeeExists(int? employeeId)
         {
-            if (employeeId != 0)
+            if (employeeId != null)
             {
-                if (!dbContext.Employee.Any(e => e.Id == employeeId))
+                if (employeeId != 0)
                 {
-                    throw new ArgumentException("The employee with the given id does not exist.");
+                    if (!dbContext.Employee.Any(e => e.Id == employeeId))
+                    {
+                        throw new ArgumentException("The employee with the given id does not exist.");
+                    }
                 }
-            }
-            else
-            {
-                employeeId = null;
+                else
+                {
+                    employeeId = null;
+                }
             }
             return employeeId;
         }
 
-        private int EnsureDivisionExists(int divisionId)
+        private int? EnsureDivisionExists(int? divisionId)
         {
-            if (!dbContext.Division.Any(d => d.Id == divisionId))
+            if (divisionId != null)
             {
-                throw new ArgumentException("The division with the given id does not exist.");
+                if (!dbContext.Division.Any(d => d.Id == divisionId))
+                {
+                    throw new ArgumentException("The division with the given id does not exist.");
+                }
             }
             return divisionId;
         }

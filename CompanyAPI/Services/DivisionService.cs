@@ -18,29 +18,41 @@ namespace CompanyAPI.Services
                 throw new ArgumentException("A division with the given code already exists.");
             }
             newDivision.LeaderId = EnsureEmployeeExists(newDivision.LeaderId);
-            newDivision.CompanyId = EnsureCompanyExists(newDivision.CompanyId);
+            newDivision.CompanyId = (int)EnsureCompanyExists(newDivision.CompanyId);
 
             dbContext.Division.Add(newDivision);
             dbContext.SaveChanges();
             return newDivision;
         }
 
-        public Division UpdateDivision(Division division)
+        public Division UpdateDivision(int id, string? code, string? name, int? leaderId, int? companyId)
         {
-            var divisionInDb = dbContext.Division.Find(division.Id);
+            var divisionInDb = dbContext.Division.Find(id);
 
             if (divisionInDb == null)
             {
-                throw new ArgumentException("Division not found.", nameof(division.Id));
+                throw new ArgumentException("Division not found.");
             }
 
-            division.LeaderId = EnsureEmployeeExists(division.LeaderId);
-            division.CompanyId = EnsureCompanyExists(division.CompanyId);
+            leaderId = EnsureEmployeeExists(leaderId);
+            companyId = EnsureCompanyExists(companyId);
 
-            divisionInDb.Code = division.Code;
-            divisionInDb.Name = division.Name;
-            divisionInDb.LeaderId = division.LeaderId;
-            divisionInDb.CompanyId = division.CompanyId;
+            if (code != null)
+            {
+                divisionInDb.Code = code;
+            }
+            if (name != null)
+            {
+                divisionInDb.Name = name;
+            }
+            if (leaderId != null)
+            {
+                divisionInDb.LeaderId = leaderId;
+            }
+            if (companyId != null)
+            {
+                divisionInDb.CompanyId = (int)companyId;
+            }
 
             dbContext.SaveChanges();
             return divisionInDb;
@@ -74,25 +86,30 @@ namespace CompanyAPI.Services
 
         private int? EnsureEmployeeExists(int? employeeId)
         {
-            if (employeeId != 0)
+            if (employeeId != null) 
             {
-                if (!dbContext.Employee.Any(e => e.Id == employeeId))
+                if (employeeId != 0)
                 {
-                    throw new ArgumentException("The employee with the given id does not exist.");
-                } 
-            } else
-            {
-                employeeId = null;
+                    if (!dbContext.Employee.Any(e => e.Id == employeeId))
+                    {
+                        throw new ArgumentException("The employee with the given id does not exist.");
+                    } 
+                } else
+                {
+                    employeeId = null;
+                }
             }
             return employeeId;
-            
         }
 
-        private int EnsureCompanyExists(int companyId)
+        private int? EnsureCompanyExists(int? companyId)
         {
-            if (!dbContext.Company.Any(c => c.Id == companyId))
+            if (companyId != null)
             {
-                throw new ArgumentException("The company with the given id does not exist.");
+                if (!dbContext.Company.Any(c => c.Id == companyId))
+                {
+                    throw new ArgumentException("The company with the given id does not exist.");
+                }
             }
             return companyId;
         }

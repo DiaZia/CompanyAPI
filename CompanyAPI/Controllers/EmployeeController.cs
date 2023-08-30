@@ -50,13 +50,11 @@ namespace CompanyAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, string? title, string firstName, string lastName, string? phone, string? email)
+        public IActionResult Update(int id, string? title, string? firstName, string? lastName, string? phone, string? email)
         {
-            Employee employee = new Employee(title, firstName, lastName, phone, email);
             try
             {
-                employee.Id = id;
-                var updatedEmployee = _employeeService.UpdateEmployee(employee);
+                var updatedEmployee = _employeeService.UpdateEmployee(id, title, firstName, lastName, phone, email);
                 return Ok(updatedEmployee);
             }
             catch (ArgumentException ex)

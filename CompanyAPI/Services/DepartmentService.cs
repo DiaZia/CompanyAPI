@@ -1,5 +1,6 @@
 ﻿using CompanyAPI.Data;
 using CompanyAPI.Models;
+using System.ComponentModel.Design;
 
 namespace CompanyAPI.Services
 {
@@ -18,29 +19,42 @@ namespace CompanyAPI.Services
                 throw new ArgumentException("A department with the given code already exists.");
             }
             newDepartment.LeaderId = EnsureEmployeeExists(newDepartment.LeaderId);
-            newDepartment.ProjectId = EnsureProjectExists(newDepartment.ProjectId);
+            newDepartment.ProjectId = (int)EnsureProjectExists(newDepartment.ProjectId);
 
             dbContext.Department.Add(newDepartment);
             dbContext.SaveChanges();
             return newDepartment;
         }
 
-        public Department UpdateDepartment(Department department)
+        public Department UpdateDepartment(int id, string? code, string? name, int? leaderId, int? projectId)
         {
-            var departmentInDb = dbContext.Department.Find(department.Id);
+            var departmentInDb = dbContext.Department.Find(id);
 
             if (departmentInDb == null)
             {
-                throw new ArgumentException("Department not found.", nameof(department.Id));
+                throw new ArgumentException("Department not found.");
             }
 
-            department.LeaderId = EnsureEmployeeExists(department.LeaderId);
-            department.ProjectId = EnsureProjectExists(department.ProjectId);
+            leaderId = EnsureEmployeeExists(leaderId);
+            projectId = EnsureProjectExists(projectId);
 
-            departmentInDb.Code = department.Code;
-            departmentInDb.Name = department.Name;
-            departmentInDb.LeaderId = department.LeaderId;
-            departmentInDb.ProjectId = department.ProjectId;
+
+            if (code != null)
+            {
+                departmentInDb.Code = code;
+            }
+            if (name != null)
+            {
+                departmentInDb.Name = name;
+            }
+            if (leaderId != null)
+            {
+                departmentInDb.LeaderId = leaderId;
+            }
+            if (projectId != null)
+            {
+                departmentInDb.ProjectId = (int)projectId;
+            }
 
             dbContext.SaveChanges();
             return departmentInDb;
@@ -74,24 +88,30 @@ namespace CompanyAPI.Services
 
         private int? EnsureEmployeeExists(int? employeeId)
         {
-            if (employeeId != 0)
+            if (employeeId != null)
             {
+                if (employeeId != 0)
+                {
                 if (!dbContext.Employee.Any(e => e.Id == employeeId))
                 {
                     throw new ArgumentException("The employee with the given id does not exist.");
                 }
-            } else
-            {
-                employeeId = null;
+                } else
+                {
+                    employeeId = null;
+                }
             }
             return employeeId;
         }
 
-        private int EnsureProjectExists(int projectId)
+        private int? EnsureProjectExists(int? projectId)
         {
-            if (!dbContext.Project.Any(d => d.Id == projectId))
+            if (projectId != null)
             {
-                throw new ArgumentException("The project with the given id does not exist.");
+                if (!dbContext.Project.Any(d => d.Id == projectId))
+                {
+                    throw new ArgumentException("The project with the given id does not exist.");
+                }
             }
             return projectId;
         }

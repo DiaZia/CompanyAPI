@@ -13,7 +13,7 @@ namespace CompanyAPI.Services
             this.dbContext = dbContext;
         }
 
-        public Employee CreateEmployee(Employee newEmployee)
+        public Employee? CreateEmployee(Employee newEmployee)
         {
             if (IsPhoneNumberValid(newEmployee.Phone) && IsEmailValid(newEmployee.Email)) {
                 dbContext.Employee.Add(newEmployee);
@@ -23,22 +23,37 @@ namespace CompanyAPI.Services
             return null;
         }
 
-        public Employee UpdateEmployee(Employee employee)
+        public Employee UpdateEmployee(int id, string? title, string? firstName, string? lastName, string? phone, string? email)
         {
-            if (IsPhoneNumberValid(employee.Phone) && IsEmailValid(employee.Email))
+            if (IsPhoneNumberValid(phone) && IsEmailValid(email))
             {
-                var employeeInDb = dbContext.Employee.Find(employee.Id);
+                var employeeInDb = dbContext.Employee.Find(id);
 
                 if (employeeInDb == null)
                 {
-                    throw new ArgumentException("Employee not found.", nameof(employee.Id));
+                    throw new ArgumentException("Employee not found.");
                 }
 
-                employeeInDb.Title = employee.Title;
-                employeeInDb.FirstName = employee.FirstName;
-                employeeInDb.LastName = employee.LastName;
-                employeeInDb.Phone = employee.Phone;
-                employeeInDb.Email = employee.Email;
+                if (title != null)
+                {
+                    employeeInDb.Title = title;
+                }
+                if (firstName != null)
+                {
+                    employeeInDb.FirstName = firstName;
+                }
+                if (lastName != null)
+                {
+                    employeeInDb.LastName = lastName;
+                }
+                if (phone != null)
+                {
+                    employeeInDb.Phone = phone;
+                }
+                if (email  != null) 
+                {
+                    employeeInDb.Email = email;
+                }
 
                 dbContext.SaveChanges();
                 return employeeInDb;
@@ -92,20 +107,20 @@ namespace CompanyAPI.Services
         }
 
 
-        public bool IsPhoneNumberValid(string phoneNumber)
+        public bool IsPhoneNumberValid(string? phoneNumber)
         {
             string phoneNumberPattern = @"^\+?(\d[\d-. ]+)?(\([\d-. ]+\))?[\d-. ]+\d$";
-            if (!Regex.IsMatch(phoneNumber, phoneNumberPattern))
+            if (phoneNumber != null && !Regex.IsMatch(phoneNumber, phoneNumberPattern))
             {
                 throw new ArgumentException("The phone number is not valid.");
             }
             return true;
         }
 
-        public bool IsEmailValid (string email)
+        public bool IsEmailValid (string? email)
         {
             string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-            if (!Regex.IsMatch(email, emailPattern))
+            if (email != null && !Regex.IsMatch(email, emailPattern))
             {
                 throw new ArgumentException("The email is not valid.");
             }

@@ -56,13 +56,11 @@ namespace CompanyAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, string code, string name, int? leaderId, int projectId)
+        public IActionResult Update(int id, string? code, string? name, int? leaderId, int? projectId)
         {
-            Department department = new Department(code, name, leaderId, projectId);
             try
             {
-                department.Id = id;
-                var updatedDepartment = _departmentService.UpdateDepartment(department);
+                var updatedDepartment = _departmentService.UpdateDepartment(id, code, name, leaderId, projectId);
                 return Ok(updatedDepartment);
             }
             catch (ArgumentException ex)
